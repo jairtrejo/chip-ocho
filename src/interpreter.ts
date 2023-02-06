@@ -121,7 +121,8 @@ export default class Interpreter {
 
   execute(instructionInfo: InstructionInfo) {
     const { opcode, instruction, x, y, n, nn, nnn } = instructionInfo;
-    const vx = this.v[x], vy = this.v[y];
+    const vx = this.v[x],
+      vy = this.v[y];
 
     const machineRoutines: { [opcode: number]: () => void } = {
       0x00e0: () => {
@@ -148,7 +149,7 @@ export default class Interpreter {
         if (machineRoutines[opcode]) {
           machineRoutines[opcode]();
         } else {
-          throw Error('Unknown machine routine');
+          throw Error("Unknown machine routine");
         }
         break;
       case 0x1:
@@ -160,6 +161,24 @@ export default class Interpreter {
         this.stack.push(this.pc);
         this.pc = nnn;
         break;
+      case 0x3:
+        // SE VX NN
+        if (vx === nn) {
+          this.pc += 2;
+        }
+        break;
+      case 0x4:
+        // SNE VX NN
+        if (vx !== nn) {
+          this.pc += 2;
+        }
+        break;
+      case 0x5:
+        // SE VX VY
+        if (vx === vy) {
+          this.pc += 2;
+        }
+        break;
       case 0x6:
         // LD VX NN
         this.v[x] = nn;
@@ -168,16 +187,24 @@ export default class Interpreter {
         // ADD VX NN
         this.v[x] += nn;
         break;
+      case 0x9:
+        // SNE VX VY
+        if (vx !== vy) {
+          this.pc += 2;
+        }
+        break;
       case 0xa:
         // LD I NNN
         this.i = nnn;
         break;
       case 0xd:
-        // DRW X Y N
+        // DRW VX VY N
         const sprite = this.memory.slice(this.i, this.i + n);
         const flipped: boolean = this.screen.draw(sprite, vx, vy);
         this.v[0xf] = flipped ? 1 : 0;
         break;
+      default:
+        throw Error("Unknown instruction");
     }
   }
 
