@@ -42,6 +42,8 @@ export default class Screen {
   clear() {
     this.canvasContext.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
     this.screenContext.clearRect(0, 0, Screen.width, Screen.height);
+    this.canvasContext.fillStyle = "#000";
+    this.canvasContext.fillRect(0, 0, this.canvasWidth, this.canvasHeight)
   }
 
   _sync() {
