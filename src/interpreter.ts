@@ -148,4 +148,10 @@ export default class Interpreter {
         break;
     }
   }
+
+  step() {
+    const opcode = this.fetch();
+    const instructionInfo = this.decode(opcode);
+    this.execute(instructionInfo);
+  }
 }

@@ -1,8 +1,10 @@
+import Clock from "./clock";
 import Interpreter, { base64DecToArr } from "./interpreter";
 import Screen from "./screen";
 
 const canvas = document.getElementById("screen") as HTMLCanvasElement;
 const screen = new Screen(canvas);
+const clock = new Clock(300);
 const interpreter = new Interpreter(screen);
 
 // IBM test program
@@ -13,8 +15,4 @@ interpreter.load(
   )
 );
 
-for (let i = 0; i< 21; ++i){
-  const opcode = interpreter.fetch();
-  const instructionInfo = interpreter.decode(opcode);
-  interpreter.execute(instructionInfo);
-}
+clock.on(() => interpreter.step());
