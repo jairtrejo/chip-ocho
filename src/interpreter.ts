@@ -55,17 +55,17 @@ export function base64DecToArr(sBase64: string, nBlocksSize: number) {
 
 export default class Interpreter {
   screen: Screen;
-  memory: Uint8ClampedArray;
+  memory: Uint8Array;
   stack: number[];
 
   pc: number;
   i: number;
-  v: Uint8ClampedArray;
+  v: Uint8Array;
 
   constructor(screen: Screen) {
     this.screen = screen;
     const buffer = new ArrayBuffer(4096);
-    this.memory = new Uint8ClampedArray(buffer);
+    this.memory = new Uint8Array(buffer);
 
     // Font
     this.memory.set(
@@ -94,7 +94,7 @@ export default class Interpreter {
     this.stack = [];
     this.pc = 0x200;
     this.i = 0x200;
-    this.v = new Uint8ClampedArray(16);
+    this.v = new Uint8Array(16);
   }
 
   load(rom: Uint8ClampedArray, start: number = 0x200) {
@@ -186,6 +186,61 @@ export default class Interpreter {
       case 0x7:
         // ADD VX NN
         this.v[x] += nn;
+        break;
+      case 0x8:
+        let result, shifted;
+        switch (n) {
+          case 0:
+            // LD VX VY
+            this.v[x] = vy;
+            console.log(this.v);
+            break;
+          case 1:
+            // OR VX VY
+            this.v[x] = vx | vy;
+            break;
+          case 2:
+            // AND VX VY
+            this.v[x] = vx & vy;
+            break;
+          case 3:
+            // XOR VX VY
+            this.v[x] = vx ^ vy;
+            break;
+          case 4:
+            // ADD VX VY
+            result = vx + vy;
+            this.v[x] = result;
+            this.v[0xf] = result > 0xff ? 1 : 0;
+            console.log(this.v);
+            break;
+          case 5:
+            // SUB VX VY
+            result = vx - vy;
+            this.v[x] = result;
+            this.v[0xf] = result > 0 ? 1 : 0;
+            break;
+          case 7:
+            // SUBN VX VY
+            result = vy - vx;
+            this.v[x] = result;
+            this.v[0xf] = result > 0 ? 1 : 0;
+            break;
+          case 6:
+            // SHR VX VY
+            // TODO: Flag for SUPER-CHIP
+            shifted = vy & 0b1;
+            this.v[x] = vy >> 1;
+            this.v[0xf] = shifted;
+            break;
+          case 0xE:
+            // SHL VX VY
+            // TODO: Flag for SUPER-CHIP
+            shifted = (vy & 0x80) >> 7;
+            this.v[x] = vy << 1;
+            this.v[0xf] = shifted;
+            break;
+        }
         break;
       case 0x9:
         // SNE VX VY

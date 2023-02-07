@@ -53,7 +53,7 @@ export default class Screen {
     this.canvasContext.drawImage(this.screenCanvas, xOffset, yOffset, w, h);
   }
 
-  draw(sprite: Uint8ClampedArray, x: number, y: number) {
+  draw(sprite: Uint8Array, x: number, y: number) {
     x = x % 64;
     y = y % 32;
     const w = 8;
