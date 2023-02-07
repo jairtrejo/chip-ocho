@@ -1,5 +1,5 @@
 export default class Keypad {
-  pressedKey: number | null = 0;
+  pressedKey: number | null = null;
 
   // prettier-ignore
   static keyMap: { [keyCode: string]: number } = {

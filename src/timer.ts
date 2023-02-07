@@ -50,17 +50,19 @@ export class Buzzer extends Timer {
   }
 
   _startBuzzer() {
-    const body = document.querySelector("body");
-    if (body) {
-      body.style.backgroundColor = "#c00";
+    const canvas = document.querySelector("canvas");
+    if (canvas) {
+      canvas.style.border = "solid 5px #c00";
+      canvas.style.margin = "-5px 0 0 -5px";
     }
     this.oscillatorNode.connect(this.gainNode);
   }
 
   _stopBuzzer() {
-    const body = document.querySelector("body");
-    if (body) {
-      body.style.backgroundColor = "#fff";
+    const canvas = document.querySelector("canvas");
+    if (canvas) {
+      canvas.style.border = "unset";
+      canvas.style.margin = "unset";
     }
     this.oscillatorNode.disconnect(this.gainNode);
   }

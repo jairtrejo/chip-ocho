@@ -199,7 +199,6 @@ export default class Interpreter {
           case 0:
             // LD VX VY
             this.v[x] = vy;
-            console.log(this.v);
             break;
           case 1:
             // OR VX VY
@@ -218,7 +217,6 @@ export default class Interpreter {
             result = vx + vy;
             this.v[x] = result;
             this.v[0xf] = result > 0xff ? 1 : 0;
-            console.log(this.v);
             break;
           case 5:
             // SUB VX VY
@@ -291,17 +289,66 @@ export default class Interpreter {
         }
         break;
       case 0xf:
+        let m;
         switch (nn) {
           case 0x07:
             // LD VX DT
             this.v[x] = this.timer.get();
             break;
           case 0x15:
+            // LD DT VX
             this.timer.set(vx);
             break;
           case 0x18:
+            // LD ST VX
             this.buzzer.set(vx);
             break;
+          case 0x1e:
+            // ADD I VX
+            this.i += vx;
+            if (this.i > 0xfff) {
+              this.i &= 0xfff;
+              // Amiga quirk TODO: Flag out?
+              this.v[0xf] = 1;
+            } else {
+              this.v[0xf] = 0;
+            }
+            break;
+          case 0x0a:
+            // LD VX K
+            // TODO: Maybe add COSMAC VIP flag
+            const key = this.keypad.pressedKey;
+            if (key !== null) {
+              this.v[x] = key;
+            } else {
+              this.pc -= 2;
+            }
+            break;
+          case 0x29:
+            // LD F VX
+            this.i = (0x50 + vx) & 0x0f;
+            break;
+          case 0x33:
+            // LD B VX
+            let a = Math.floor((vx % 1000) / 100),
+              b = Math.floor((vx % 100) / 10),
+              c = vx % 10;
+            this.memory.set([a, b, c], this.i);
+            break;
+          case 0x55:
+            // LD [I] VX
+            m = this.v.slice(0, x + 1);
+            this.memory.set(m, this.i);
+            this.i = this.i + x;
+            break;
+          case 0x65:
+            // LD VX [I]
+            m = this.memory.slice(this.i, this.i + x + 1);
+            this.v.set(m, 0);
+            this.i = this.i + x;
+            break;
+          default:
+            throw Error(`Unknown instruction ${opcode.toString(16)}`);
         }
         break;
       default:
