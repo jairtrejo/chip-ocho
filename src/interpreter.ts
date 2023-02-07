@@ -1,4 +1,6 @@
+import type Keypad from "./keypad";
 import type Screen from "./screen";
+import Timer, { Buzzer } from "./timer";
 
 type InstructionInfo = {
   opcode: number;
@@ -55,6 +57,9 @@ export function base64DecToArr(sBase64: string, nBlocksSize: number) {
 
 export default class Interpreter {
   screen: Screen;
+  keypad: Keypad;
+  timer: Timer;
+  buzzer: Buzzer;
   memory: Uint8Array;
   stack: number[];
 
@@ -62,8 +67,11 @@ export default class Interpreter {
   i: number;
   v: Uint8Array;
 
-  constructor(screen: Screen) {
+  constructor(screen: Screen, keypad: Keypad, timer: Timer, buzzer: Buzzer) {
     this.screen = screen;
+    this.keypad = keypad;
+    this.timer = timer;
+    this.buzzer = buzzer;
     const buffer = new ArrayBuffer(4096);
     this.memory = new Uint8Array(buffer);
 
@@ -140,8 +148,6 @@ export default class Interpreter {
         }
       },
     };
-
-    //console.log(opcode.toString(16));
 
     switch (instruction) {
       case 0x0:
@@ -233,7 +239,7 @@ export default class Interpreter {
             this.v[x] = vy >> 1;
             this.v[0xf] = shifted;
             break;
-          case 0xE:
+          case 0xe:
             // SHL VX VY
             // TODO: Flag for SUPER-CHIP
             shifted = (vy & 0x80) >> 7;
@@ -252,14 +258,54 @@ export default class Interpreter {
         // LD I NNN
         this.i = nnn;
         break;
+      case 0xb:
+        // JP V0 NNN
+        // TODO: Flag for SUPER-CHIP
+        this.pc = nnn + this.v[0];
+      case 0xc:
+        // RND VX NN
+        const r = Math.floor(Math.random() * 256);
+        this.v[x] = r & nn;
       case 0xd:
         // DRW VX VY N
         const sprite = this.memory.slice(this.i, this.i + n);
         const flipped: boolean = this.screen.draw(sprite, vx, vy);
         this.v[0xf] = flipped ? 1 : 0;
         break;
+      case 0xe:
+        switch (nn) {
+          case 0x9e:
+            // SKP VX
+            if (this.keypad.pressedKey === vx) {
+              this.pc += 2;
+            }
+            break;
+          case 0xa1:
+            // SKNP VX
+            if (this.keypad.pressedKey !== vx) {
+              this.pc += 2;
+            }
+            break;
+          default:
+            throw Error(`Unknown instruction ${opcode.toString(16)}`);
+        }
+        break;
+      case 0xf:
+        switch (nn) {
+          case 0x07:
+            // LD VX DT
+            this.v[x] = this.timer.get();
+            break;
+          case 0x15:
+            this.timer.set(vx);
+            break;
+          case 0x18:
+            this.buzzer.set(vx);
+            break;
+        }
+        break;
       default:
-        throw Error("Unknown instruction");
+        throw Error(`Unknown instruction ${opcode.toString(16)}`);
     }
   }
 

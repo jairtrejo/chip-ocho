@@ -15,11 +15,15 @@ export default class Clock {
     this.onAnimationFrame = this.onAnimationFrame.bind(this);
   }
 
+  _schedule(f: () => void) {
+    setTimeout(f, 0);
+  }
+
   on(callback: Callback) {
     this.callbacks.add(callback);
 
     if (this.callbacks.size == 1) {
-      setTimeout(this.onAnimationFrame, 0);
+      this._schedule(this.onAnimationFrame);
     }
   }
 
@@ -42,7 +46,7 @@ export default class Clock {
     this.last = now;
 
     if (this.callbacks.size > 0) {
-      setTimeout(this.onAnimationFrame, 0);
+      this._schedule(this.onAnimationFrame);
     }
   }
 }
