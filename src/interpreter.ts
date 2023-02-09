@@ -154,7 +154,7 @@ export default class Interpreter {
         if (machineRoutines[opcode]) {
           machineRoutines[opcode]();
         } else {
-          throw Error("Unknown machine routine");
+          throw Error(`Unknown machine routine ${opcode.toString(16)}`);
         }
         break;
       case 0x1:

@@ -16,7 +16,7 @@ export default class Clock {
   }
 
   _schedule(f: () => void) {
-    setTimeout(f, 0);
+    requestAnimationFrame(f);
   }
 
   on(callback: Callback) {
@@ -36,9 +36,13 @@ export default class Clock {
     const last = this.last > 0 ? this.last : now - this.period;
     this.elapsed += now - last;
 
-    if (this.elapsed >= this.period) {
+    const pending = Math.floor(this.elapsed / this.period);
+
+    if (pending > 1) {
       for (const callback of this.callbacks) {
-        callback();
+        for (let i = 0; i < pending; ++i) {
+          callback();
+        }
       }
       this.elapsed = 0;
     }

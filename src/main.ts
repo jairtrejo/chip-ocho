@@ -7,7 +7,7 @@ import Timer, { Buzzer } from "./timer";
 const canvas = document.getElementById("screen") as HTMLCanvasElement;
 
 const screen = new Screen(canvas);
-const systemClock = new Clock(300);
+const systemClock = new Clock(1000);
 const keypad = new Keypad();
 const timerClock = new Clock(60);
 const timer = new Timer(timerClock);
