@@ -141,7 +141,6 @@ export default class Interpreter {
         // RET
         const location = this.stack.pop();
         if (location) {
-          this.stack.push(this.pc);
           this.pc = location;
         } else {
           throw Error("Empty stack");
@@ -222,13 +221,13 @@ export default class Interpreter {
             // SUB VX VY
             result = vx - vy;
             this.v[x] = result;
-            this.v[0xf] = result > 0 ? 1 : 0;
+            this.v[0xf] = result >= 0 ? 1 : 0;
             break;
           case 7:
             // SUBN VX VY
             result = vy - vx;
             this.v[x] = result;
-            this.v[0xf] = result > 0 ? 1 : 0;
+            this.v[0xf] = result >= 0 ? 1 : 0;
             break;
           case 6:
             // SHR VX VY
@@ -260,10 +259,12 @@ export default class Interpreter {
         // JP V0 NNN
         // TODO: Flag for SUPER-CHIP
         this.pc = nnn + this.v[0];
+        break;
       case 0xc:
         // RND VX NN
         const r = Math.floor(Math.random() * 256);
         this.v[x] = r & nn;
+        break;
       case 0xd:
         // DRW VX VY N
         const sprite = this.memory.slice(this.i, this.i + n);
@@ -326,7 +327,7 @@ export default class Interpreter {
             break;
           case 0x29:
             // LD F VX
-            this.i = (0x50 + vx) & 0x0f;
+            this.i = 0x50 + (vx & 0x0f) * 5;
             break;
           case 0x33:
             // LD B VX
